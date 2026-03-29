@@ -28,7 +28,7 @@ class DadosJogo:
                 nova_pos = self.jogadores[player_id]['y'] + 10
                 # LIMITE DO CHÃO
                 if nova_pos >= 100:
-                    # GAME OVER / RESPAWN: Volta à posição inicial
+                    # GAME OVER: Volta à posição inicial
                     self.jogadores[player_id]['y'] = 20
                     # Perde a pontuação toda
                     self.jogadores[player_id]['score'] = 0 
