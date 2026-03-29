@@ -19,10 +19,15 @@ class ProcessaCliente(threading.Thread):
             msg_inicial = receive_object(self.connection)
             if msg_inicial and msg_inicial.get("acao") == "ENTRAR":
                 nome = msg_inicial.get("nome", f"Priolo_{self.player_id}")
-                self.dados.adicionar_jogador(self.player_id, nome)
+                # Tenta adicionar. Se a base de dados devolver False, é porque está cheio!
+                conseguiu_entrar = self.dados.adicionar_jogador(self.player_id, nome)
                 
-                print(f"\n[+] {self.address} - O jogador '{nome}' (ID: {self.player_id}) ENTROU no jogo!")
-                print(f"ESTADO GLOBAL: {self.dados.obter_estado()}\n")
+                if conseguiu_entrar:
+                    print(f"\n[+] {self.address} - O jogador '{nome}' ENTROU no jogo!")
+                    print(f"ESTADO GLOBAL: {self.dados.obter_estado()}\n")
+                else:
+                    print(f"\n[!] {self.address} - O jogador '{nome}' tentou entrar, mas o SERVIDOR ESTÁ CHEIO!")
+                    ativo = False 
             else:
                 ativo = False
 
