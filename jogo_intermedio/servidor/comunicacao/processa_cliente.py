@@ -16,13 +16,11 @@ class ProcessaCliente(threading.Thread):
         
         try:
             # Recebe o nome do jogador
-            # Recebe o nome do jogador
             msg_inicial = receive_object(self.connection)
             if msg_inicial and msg_inicial.get("acao") == "ENTRAR":
                 nome = msg_inicial.get("nome", f"Priolo_{self.player_id}")
                 self.dados.adicionar_jogador(self.player_id, nome)
                 
-                # NOVO: O servidor anuncia a entrada e mostra o estado
                 print(f"\n[+] {self.address} - O jogador '{nome}' (ID: {self.player_id}) ENTROU no jogo!")
                 print(f"ESTADO GLOBAL: {self.dados.obter_estado()}\n")
             else:
@@ -35,7 +33,6 @@ class ProcessaCliente(threading.Thread):
                     pedido = receive_object(self.connection)
                     
                     if not pedido or pedido.get("acao") == "SAIR":
-                        # NOVO: O servidor regista o pedido de saída
                         print(f"[-] {self.address} - O jogador '{nome}' (ID: {self.player_id}) saiu.")
                         ativo = False
                         break
