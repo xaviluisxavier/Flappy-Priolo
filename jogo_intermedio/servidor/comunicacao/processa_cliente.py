@@ -15,7 +15,7 @@ class ProcessaCliente(threading.Thread):
         ativo = True
         
         try:
-            # Recebe o nome do jogador
+           # Recebe o nome do jogador
             msg_inicial = receive_object(self.connection)
             if msg_inicial and msg_inicial.get("acao") == "ENTRAR":
                 nome = msg_inicial.get("nome", f"Priolo_{self.player_id}")
@@ -38,6 +38,7 @@ class ProcessaCliente(threading.Thread):
                     pedido = receive_object(self.connection)
                     
                     if not pedido or pedido.get("acao") == "SAIR":
+                        #O servidor regista o pedido de saída
                         print(f"[-] {self.address} - O jogador '{nome}' (ID: {self.player_id}) saiu.")
                         ativo = False
                         break
@@ -47,7 +48,9 @@ class ProcessaCliente(threading.Thread):
                         self.dados.atualizar_posicao(self.player_id, "FLAP")
 
                 except socket.timeout:
-                    self.dados.aplicar_gravidade(self.player_id)
+                    morreu = self.dados.aplicar_gravidade(self.player_id)
+                    if morreu:
+                        print(f"[!] O jogador '{nome}' (ID: {self.player_id}) morreu!")
                 
                 estado_global = self.dados.obter_estado()
                 send_object(self.connection, estado_global)
