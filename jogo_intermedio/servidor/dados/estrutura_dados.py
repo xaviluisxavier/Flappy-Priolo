@@ -6,8 +6,12 @@ class DadosJogo:
         self.lock = threading.Lock() 
 
     def adicionar_jogador(self, player_id, nome):
-        with self.lock:
-            self.jogadores[player_id] = {'nome': nome, 'y': 50, 'score': 0}
+         with self.lock:
+            # Verifica se já estão 5 jogadores a jogar
+            if len(self.jogadores) >= 5:
+                return False # Recusa a entrada
+            self.jogadores[player_id] = {'nome': nome, 'y': 100, 'score': 0}
+            return True # Entrada com sucesso
 
     def remover_jogador(self, player_id):
         with self.lock:
