@@ -4,14 +4,13 @@ class DadosJogo:
     def __init__(self):
         self.jogadores = {} 
         self.lock = threading.Lock() 
-        self.vulcoes = [{'x': 400}, {'x': 700}, {'x': 1000}]
 
     def adicionar_jogador(self, player_id, nome):
        with self.lock:
             # Verifica se já estão 5 jogadores a jogar
             if len(self.jogadores) >= 5:
                 return False # Recusa a entrada
-            self.jogadores[player_id] = {'nome': nome, 'y': 100, 'score': 0}
+            self.jogadores[player_id] = {'nome': nome, 'y': 20, 'score': 0}
             return True # Entrada com sucesso
 
     def remover_jogador(self, player_id):
@@ -31,20 +30,17 @@ class DadosJogo:
         with self.lock:
             if player_id in self.jogadores:
                 nova_pos = self.jogadores[player_id]['y'] + 10
-                # LIMITE DO CHÃO
+                
                 if nova_pos >= 100:
-                    # GAME OVER: Volta à posição inicial
                     self.jogadores[player_id]['y'] = 20
-                    # Perde a pontuação toda
                     self.jogadores[player_id]['score'] = 0 
+                    return True
                 else:
                     self.jogadores[player_id]['y'] = nova_pos
-                    # Só ganha pontos se não bater no chão
                     self.jogadores[player_id]['score'] += 1
+                    return False 
+        return False
 
     def obter_estado(self):
         with self.lock:
-           return {
-                'jogadores': self.jogadores.copy(),
-                'vulcoes': self.vulcoes.copy()
-            }
+            return self.jogadores.copy()
