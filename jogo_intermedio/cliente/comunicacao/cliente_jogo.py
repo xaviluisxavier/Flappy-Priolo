@@ -19,7 +19,6 @@ class ClientePriolo:
                     self.ativo = False
                     break
                 
-                # Limpa a consola para dar o efeito de "animação" (Opcional, mas fica giro!)
                 os.system('cls' if os.name == 'nt' else 'clear')
                 
                 print("JOGO EM EXECUÇÃO")
@@ -43,7 +42,7 @@ class ClientePriolo:
             client_socket.connect((self.host, self.port))
             send_object(client_socket, {"acao": "ENTRAR", "nome": nome})
             
-            # Arranca a Thread "Ouvinte" que vai imprimir o ecrã constantemente
+            # Arranca a Thread que vai imprimir o ecrã constantemente
             thread_rececao = threading.Thread(target=self.ouvir_servidor, args=(client_socket,))
             thread_rececao.start()
 
