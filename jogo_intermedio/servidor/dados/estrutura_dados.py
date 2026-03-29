@@ -4,9 +4,10 @@ class DadosJogo:
     def __init__(self):
         self.jogadores = {} 
         self.lock = threading.Lock() 
+        self.vulcoes = [{'x': 400}, {'x': 700}, {'x': 1000}]
 
     def adicionar_jogador(self, player_id, nome):
-         with self.lock:
+       with self.lock:
             # Verifica se já estão 5 jogadores a jogar
             if len(self.jogadores) >= 5:
                 return False # Recusa a entrada
@@ -43,4 +44,7 @@ class DadosJogo:
 
     def obter_estado(self):
         with self.lock:
-            return self.jogadores.copy()
+           return {
+                'jogadores': self.jogadores.copy(),
+                'vulcoes': self.vulcoes.copy()
+            }
