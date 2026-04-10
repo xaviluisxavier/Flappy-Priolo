@@ -9,6 +9,7 @@ class BroadcastReceiver(threading.Thread):
         self.ativo = True
 
     def run(self):
+        """Recebe os estados do jogo do servidor e os imprime no terminal."""
         while self.ativo:
             try:
                 estado = receive_object(self.connection)
@@ -18,7 +19,7 @@ class BroadcastReceiver(threading.Thread):
                 if "acao" in estado and estado["acao"] == "ERRO":
                     os.system('cls' if os.name == 'nt' else 'clear')
                     print(f"\nLIGAÇÃO RECUSADA: {estado['motivo']}")
-                    print("Pressiona [ENTER] para sair...")
+                    print("Pressiona [ENTER] para sair.")
                     self.ativo = False
                     break
                 
