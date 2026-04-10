@@ -4,6 +4,7 @@ from comunicacao.sockets_util import send_object
 
 class ThreadBroadcast(threading.Thread):
     def __init__(self, lista_clientes, dados, intervalo=0.1): 
+        """Inicializa a thread de broadcast, armazenando a lista de clientes, dados do jogo e intervalo de atualização."""
         super().__init__(daemon=True)
         self.lista_clientes = lista_clientes
         self.dados = dados
