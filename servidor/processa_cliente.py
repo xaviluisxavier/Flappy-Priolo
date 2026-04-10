@@ -3,6 +3,7 @@ from comunicacao.sockets_util import receive_object
 
 class ProcessaCliente(threading.Thread):
     def __init__(self, connection, address, dados, lista_clientes, player_id):
+        """Inicializa a thread para processar um cliente, armazenando a conexão, endereço, dados do jogo, lista de clientes e ID do jogador."""
         super().__init__(daemon=True)
         self.connection = connection
         self.address = address
