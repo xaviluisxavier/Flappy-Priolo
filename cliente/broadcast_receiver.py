@@ -4,6 +4,7 @@ from comunicacao.sockets_util import receive_object
 
 class BroadcastReceiver(threading.Thread):
     def __init__(self, connection):
+        """Inicializa a thread de broadcast receiver, armazenando a conexão e definindo a thread como daemon."""
         super().__init__(daemon=True)
         self.connection = connection
         self.ativo = True
