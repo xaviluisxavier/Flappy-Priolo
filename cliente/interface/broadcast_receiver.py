@@ -44,9 +44,9 @@ class BroadcastReceiver(threading.Thread):
                             # 1. Verifica se nesta coordenada exata (X, Y) existe um VULCÃO
                             for vulcao in estado['vulcoes']:
                                 na_coluna_do_vulcao = abs(vulcao['x'] - x) <= 2
-                                bate_no_vulcao = y < vulcao['abertura_y'] - 15 or y > vulcao['abertura_y'] + 15
+                                desenha_vulcao = y < vulcao['abertura_y'] - 15 or y > vulcao['abertura_y'] + 15
                                 
-                                if na_coluna_do_vulcao and bate_no_vulcao:
+                                if na_coluna_do_vulcao and desenha_vulcao:
                                     pixel = "X" 
                             
                             # 2. Verifica se nesta coordenada exata (X, Y) está o PÁSSARO
