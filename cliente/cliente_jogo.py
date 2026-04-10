@@ -4,6 +4,7 @@ from cliente.broadcast_receiver import BroadcastReceiver
 
 class ClientePriolo:
     def jogar(self, host='127.0.0.1', port=5000):
+        """Inicia o cliente, conecta ao servidor e gerencia a interação do jogador."""
         nome = input("Introduz o nome do teu Priolo: ").strip()
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         
