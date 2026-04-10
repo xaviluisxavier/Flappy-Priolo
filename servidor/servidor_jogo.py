@@ -17,6 +17,7 @@ class ServidorPriolo:
         self.broadcast.start()
 
     def start_server(self):
+        """Inicia o servidor, aceita conexões e cria threads para cada cliente."""
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.bind((self.host, self.port))
         server_socket.listen(5)
