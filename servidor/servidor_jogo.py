@@ -7,6 +7,7 @@ from servidor.broadcast_emissor import ThreadBroadcast
 
 class ServidorPriolo:
     def __init__(self, host='127.0.0.1', port=5000):
+        """Inicializa o servidor com o host, porta, dados do jogo, lista de clientes e thread de broadcast."""
         self.host = host
         self.port = port
         self.dados = DadosJogo()
