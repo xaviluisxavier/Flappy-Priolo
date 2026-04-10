@@ -14,7 +14,7 @@ class ServidorPriolo:
         self.contador_id = 0
         
         self.lista_clientes = ListaClientes() 
-        self.broadcast = ThreadBroadcast(self.lista_clientes, self.dados, intervalo=0.2)
+        self.broadcast = ThreadBroadcast(self.lista_clientes, self.dados, intervalo=0.1)
         self.broadcast.start()
 
     def start_server(self):
