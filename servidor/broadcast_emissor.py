@@ -11,6 +11,7 @@ class ThreadBroadcast(threading.Thread):
         self.running = True
 
     def run(self):
+        """Loop que atualiza o estado do jogo e envia para os clientes."""
         print("ThreadBroadcast ativa")
         while self.running:
             time.sleep(self.intervalo)
