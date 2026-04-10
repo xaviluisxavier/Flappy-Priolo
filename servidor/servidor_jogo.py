@@ -22,7 +22,7 @@ class ServidorPriolo:
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.bind((self.host, self.port))
         server_socket.listen(5)
-        print(f"Servidor em {self.host}:{self.port}...")
+        print(f"Servidor em {self.host}:{self.port}.")
 
         while True:
             conn, addr = server_socket.accept()
