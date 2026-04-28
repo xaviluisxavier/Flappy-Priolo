@@ -20,8 +20,8 @@ class DadosJogo:
                 
         # Parâmetros físicos
         self.gravidade = 5
-        self.velocidade_tubos = 2
-        self.distancia_entre_tubos = 60
+        self.velocidade_vulcoes = 2
+        self.distancia_entre_vulcoes = 60
         self.posicao_x_priolos = 20 
 
     def adicionar_jogador(self, player_id, nome):
@@ -34,12 +34,14 @@ class DadosJogo:
        """
        with self.lock:
             # 1. Verifica limite de jogadores para não sobrecarregar o servidor
-            if len(self.jogadores) >= 5:
+            servidor_esta_cheio = len(self.jogadores) >= 5
+            if servidor_esta_cheio:
                 return False, "SERVIDOR CHEIO"
             
             # 2. Verifica se o nome já está a ser utilizado por outro jogador ativo
             for pid, dados in self.jogadores.items():
-                if dados['nome'] == nome:
+                nome_ja_em_uso = dados['nome'] == nome
+                if nome_ja_em_uso:
                     return False, "NOME JÁ EXISTE"
             
             # 3. Guarda o jogador e inicializa
@@ -74,9 +76,12 @@ class DadosJogo:
             if player_id in self.jogadores:
                 if acao == "FLAP":
                     # O Priolo sobe subtraindo valor ao eixo Y
-                    nova_pos = self.jogadores[player_id]['y'] - 20
+                    forca_do_salto = 20
+                    nova_pos = self.jogadores[player_id]['y'] - forca_do_salto
                     
-                    if nova_pos < 0:
+                    bateu_no_teto_do_ecra = nova_pos < 0
+                    
+                    if bateu_no_teto_do_ecra:
                         self.jogadores[player_id]['y'] = 20 
                         self.jogadores[player_id]['score'] = 0 
                         return True
@@ -102,22 +107,36 @@ class DadosJogo:
             morreu = False
 
             # 1. Colisão com o chão (Limite inferior do ecrã)
-            if jogador['y'] >= 100:
+            limite_do_chao = 100
+            bateu_no_chao = jogador['y'] >= limite_do_chao
+            if bateu_no_chao:
                 morreu = True
 
             # 2. Colisão com os vulcões
             for v in jogador['vulcoes']:
                 # Verifica se o Priolo está alinhado no eixo X com o vulcão
-                if abs(v['x'] - jogador['x']) < 10: 
+                distancia_horizontal = abs(v['x'] - jogador['x'])
+                margem_horizontal_da_colisao = 10
+                esta_alinhado_no_eixo_x = distancia_horizontal < margem_horizontal_da_colisao
+                
+                if esta_alinhado_no_eixo_x: 
                     # Verifica se o Priolo bateu nas margens do vulcão
-                    if jogador['y'] < v['abertura_y'] - 15 or jogador['y'] > v['abertura_y'] + 15:
+                    metade_do_tamanho_da_abertura = 15
+                    teto_do_vulcao = v['abertura_y'] - metade_do_tamanho_da_abertura
+                    chao_do_vulcao = v['abertura_y'] + metade_do_tamanho_da_abertura
+                    
+                    bateu_no_vulcao_de_cima = jogador['y'] < teto_do_vulcao
+                    bateu_no_vulcao_de_baixo = jogador['y'] > chao_do_vulcao
+                    
+                    if bateu_no_vulcao_de_cima or bateu_no_vulcao_de_baixo:
                         morreu = True
 
             if morreu:
                 # Reset do jogador: Volta ao início, zera os pontos e gera um novo ecrã
                 jogador['y'] = 20 
                 jogador['score'] = 0 
-                jogador['vulcoes'] = [{'x': 100, 'abertura_y': random.randint(30, 70), 'contado': False}]
+                nova_abertura_aleatoria = random.randint(30, 70)
+                jogador['vulcoes'] = [{'x': 100, 'abertura_y': nova_abertura_aleatoria, 'contado': False}]
                 return True
             
             return False
@@ -131,7 +150,10 @@ class DadosJogo:
             for pid, jogador in self.jogadores.items():
                 for v in jogador['vulcoes']:
                     # Se o vulcão ficou à esquerda do pássaro e ainda não foi contabilizado
-                    if v['x'] < self.posicao_x_priolos and not v.get('contado', False):
+                    passaro_ja_passou_pelo_vulcao = v['x'] < self.posicao_x_priolos
+                    ponto_ainda_nao_contabilizado = not v.get('contado', False)
+                    
+                    if passaro_ja_passou_pelo_vulcao and ponto_ainda_nao_contabilizado:
                         jogador['score'] += 1
                         v['contado'] = True
 
@@ -145,16 +167,30 @@ class DadosJogo:
             for pid, jogador in self.jogadores.items():
                 # Move todos os vulcões deste jogador para a esquerda
                 for v in jogador['vulcoes']:
-                    v['x'] -= self.velocidade_tubos
+                    v['x'] -= self.velocidade_vulcoes
 
-                # Se o vulcão mais antigo saiu completamente do ecrã pela esquerda, elimina-o
-                if jogador['vulcoes'] and jogador['vulcoes'][0]['x'] < -10:
-                    jogador['vulcoes'].pop(0)
+                tem_vulcoes_no_ecra = len(jogador['vulcoes']) > 0
+                
+                if tem_vulcoes_no_ecra:
+                    vulcao_mais_antigo = jogador['vulcoes'][0]
+                    vulcao_saiu_do_ecra = vulcao_mais_antigo['x'] < -10
+                    
+                    # Se o vulcão saiu completamente do ecrã pela esquerda, elimina-o
+                    if vulcao_saiu_do_ecra:
+                        jogador['vulcoes'].pop(0)
 
-                # Se o último vulcão da lista já andou o suficiente, cria um novo no lado direito
-                if jogador['vulcoes'][-1]['x'] < (100 - self.distancia_entre_tubos):
-                    nova_abertura = random.randint(30, 70)
-                    jogador['vulcoes'].append({'x': 100, 'abertura_y': nova_abertura, 'contado': False})
+                # Avalia de novo se há vulcões após uma possível remoção acima
+                if len(jogador['vulcoes']) > 0:
+                    ultimo_vulcao = jogador['vulcoes'][-1]
+                    posicao_para_criar_novo_vulcao = 100 - self.distancia_entre_vulcoes
+                    
+                    ultimo_vulcao_andou_o_suficiente = ultimo_vulcao['x'] < posicao_para_criar_novo_vulcao
+                    
+                    # Se o último vulcão da lista já andou o suficiente, cria um novo no lado direito
+                    if ultimo_vulcao_andou_o_suficiente:
+                        nova_abertura = random.randint(30, 70)
+                        novo_vulcao = {'x': 100, 'abertura_y': nova_abertura, 'contado': False}
+                        jogador['vulcoes'].append(novo_vulcao)
 
     def obter_estado(self):
         """
