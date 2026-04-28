@@ -64,30 +64,69 @@ class DadosJogo:
             if player_id in self.jogadores:
                 del self.jogadores[player_id]
 
+    def _verificar_colisoes_e_resetar(self, jogador):
+        """
+        Função auxiliar que centraliza todas as regras de colisão 
+        (Teto, Chão e Vulcões). Aplica o reset se necessário.
+        """
+        morreu = False
+
+        # 1. Colisão com o Teto
+        bateu_no_teto = jogador['y'] < 0
+        
+        # 2. Colisão com o chão
+        limite_do_chao = 100
+        bateu_no_chao = jogador['y'] >= limite_do_chao
+        
+        if bateu_no_teto or bateu_no_chao:
+            morreu = True
+
+        # 3. Colisão com os vulcões
+        for v in jogador['vulcoes']:
+            # Verifica se o Priolo está alinhado no eixo X com o vulcão
+            distancia_horizontal = abs(v['x'] - jogador['x'])
+            margem_horizontal_da_colisao = 10
+            esta_alinhado_no_eixo_x = distancia_horizontal < margem_horizontal_da_colisao
+            
+            if esta_alinhado_no_eixo_x: 
+                # Verifica se o Priolo bateu nas margens do vulcão
+                metade_do_tamanho_da_abertura = 15
+                teto_do_vulcao = v['abertura_y'] - metade_do_tamanho_da_abertura
+                chao_do_vulcao = v['abertura_y'] + metade_do_tamanho_da_abertura
+                
+                bateu_no_vulcao_de_cima = jogador['y'] < teto_do_vulcao
+                bateu_no_vulcao_de_baixo = jogador['y'] > chao_do_vulcao
+                
+                if bateu_no_vulcao_de_cima or bateu_no_vulcao_de_baixo:
+                    morreu = True
+
+        # Reset do jogador: Volta ao início, zera os pontos e gera um novo ecrã
+        if morreu:
+            jogador['y'] = 20 
+            jogador['score'] = 0 
+            nova_abertura_aleatoria = random.randint(30, 70)
+            jogador['vulcoes'] = [{'x': 100, 'abertura_y': nova_abertura_aleatoria, 'contado': False}]
+            return True 
+            
+        return False 
+
     def atualizar_posicao(self, player_id, acao):
         """
         Atualiza a posição do jogador com base numa ação recebida.
         
         :param player_id: O identificador do jogador que executou a ação.
         :param acao: O tipo de ação (neste caso, espera-se "FLAP").
-        :return: True se o jogador bateu no "teto" (limite superior), False caso contrário.
+        :return: True se o jogador morreu, False caso contrário.
         """
         with self.lock:
             if player_id in self.jogadores:
                 if acao == "FLAP":
                     # O Priolo sobe subtraindo valor ao eixo Y
                     forca_do_salto = 20
-                    nova_pos = self.jogadores[player_id]['y'] - forca_do_salto
+                    self.jogadores[player_id]['y'] -= forca_do_salto
                     
-                    bateu_no_teto_do_ecra = nova_pos < 0
-                    
-                    if bateu_no_teto_do_ecra:
-                        self.jogadores[player_id]['y'] = 20 
-                        self.jogadores[player_id]['score'] = 0 
-                        return True
-                    else:
-                        self.jogadores[player_id]['y'] = nova_pos
-                        return False
+                    # Verifica as colisões através da função central
+                    return self._verificar_colisoes_e_resetar(self.jogadores[player_id])
         return False
 
     def aplicar_gravidade(self, player_id):
@@ -104,42 +143,9 @@ class DadosJogo:
             
             jogador = self.jogadores[player_id]
             jogador['y'] += self.gravidade
-            morreu = False
-
-            # 1. Colisão com o chão (Limite inferior do ecrã)
-            limite_do_chao = 100
-            bateu_no_chao = jogador['y'] >= limite_do_chao
-            if bateu_no_chao:
-                morreu = True
-
-            # 2. Colisão com os vulcões
-            for v in jogador['vulcoes']:
-                # Verifica se o Priolo está alinhado no eixo X com o vulcão
-                distancia_horizontal = abs(v['x'] - jogador['x'])
-                margem_horizontal_da_colisao = 10
-                esta_alinhado_no_eixo_x = distancia_horizontal < margem_horizontal_da_colisao
-                
-                if esta_alinhado_no_eixo_x: 
-                    # Verifica se o Priolo bateu nas margens do vulcão
-                    metade_do_tamanho_da_abertura = 15
-                    teto_do_vulcao = v['abertura_y'] - metade_do_tamanho_da_abertura
-                    chao_do_vulcao = v['abertura_y'] + metade_do_tamanho_da_abertura
-                    
-                    bateu_no_vulcao_de_cima = jogador['y'] < teto_do_vulcao
-                    bateu_no_vulcao_de_baixo = jogador['y'] > chao_do_vulcao
-                    
-                    if bateu_no_vulcao_de_cima or bateu_no_vulcao_de_baixo:
-                        morreu = True
-
-            if morreu:
-                # Reset do jogador: Volta ao início, zera os pontos e gera um novo ecrã
-                jogador['y'] = 20 
-                jogador['score'] = 0 
-                nova_abertura_aleatoria = random.randint(30, 70)
-                jogador['vulcoes'] = [{'x': 100, 'abertura_y': nova_abertura_aleatoria, 'contado': False}]
-                return True
             
-            return False
+            # Verifica as colisões através da função central
+            return self._verificar_colisoes_e_resetar(jogador)
         
     def verificar_pontos(self):
         """
@@ -160,7 +166,7 @@ class DadosJogo:
     def atualizar_mundo(self):
         """
         Desloca os vulcões para a esquerda.
-        Remove os vulcões que já saíram do ecrã e gera novos vulcões há direita de 
+        Remove os vulcões que já saíram do ecrã e gera novos vulcões à direita de 
         forma independente para cada jogador.
         """
         with self.lock:
@@ -173,20 +179,19 @@ class DadosJogo:
                 
                 if tem_vulcoes_no_ecra:
                     vulcao_mais_antigo = jogador['vulcoes'][0]
-                    vulcao_saiu_do_ecra = vulcao_mais_antigo['x'] < -10
+                    vulcao_saiu_do_ecra_pela_esquerda = vulcao_mais_antigo['x'] < -10
                     
-                    # Se o vulcão saiu completamente do ecrã pela esquerda, elimina-o
-                    if vulcao_saiu_do_ecra:
+                    # Se o vulcão mais antigo saiu completamente do ecrã pela esquerda, elimina-o
+                    if vulcao_saiu_do_ecra_pela_esquerda:
                         jogador['vulcoes'].pop(0)
 
-                # Avalia de novo se há vulcões após uma possível remoção acima
+                # Se o último vulcão da lista já andou o suficiente, cria um novo no lado direito
                 if len(jogador['vulcoes']) > 0:
                     ultimo_vulcao = jogador['vulcoes'][-1]
                     posicao_para_criar_novo_vulcao = 100 - self.distancia_entre_vulcoes
                     
                     ultimo_vulcao_andou_o_suficiente = ultimo_vulcao['x'] < posicao_para_criar_novo_vulcao
                     
-                    # Se o último vulcão da lista já andou o suficiente, cria um novo no lado direito
                     if ultimo_vulcao_andou_o_suficiente:
                         nova_abertura = random.randint(30, 70)
                         novo_vulcao = {'x': 100, 'abertura_y': nova_abertura, 'contado': False}
