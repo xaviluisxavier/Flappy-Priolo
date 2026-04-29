@@ -89,7 +89,7 @@ Isto funciona como a "velocidade" do pássaro. Ao limitar a taxa máxima de qued
 Para a conversão da interface de terminal numa interface gráfica, foi necessário desenhar um *prompt* técnico que garantisse a estabilidade da rede e a fluidez visual do jogo. O *prompt* utilizado foi o seguinte:
 
 > **Prompt:**
-> "Atua como um Engenheiro de Software especialista em Python, Pygame e Redes (Sockets). O meu projeto 'Flappy Priolo' tem um servidor que corre a um *tick rate* de ~33 FPS (0.03s de intervalo) e envia o estado do jogo em formato JSON via Broadcast para múltiplos clientes. 
+> "O meu projeto 'Flappy Priolo' tem um servidor que corre a um *tick rate* de ~33 FPS (0.03s de intervalo) e envia o estado do jogo em formato JSON via Broadcast para múltiplos clientes. 
 > 
 > Preciso que programes a classe `InterfaceGrafica` (cliente Pygame) cumprindo estritamente os seguintes requisitos arquiteturais:
 > 
