@@ -70,20 +70,6 @@ Para correr a versão final do cliente gráfico, é necessário instalar as segu
 pip install pygame
 pip install pillow
 ```
-
-### Anexo: Prompt de Apoio à Transição para Pygame
-
-Para converter a interface de terminal numa interface gráfica funcional, foi utilizado o seguinte prompt técnico:
-
-> **Prompt:**
-> "Cria uma classe `InterfaceGrafica` em Pygame para um jogo multiplayer (Flappy Bird style). 
-> 
-> **Requisitos Técnicos:**
-> 1. **Arquitetura de Threads:** O `BroadcastReceiver` (rede) deve apenas atualizar uma variável `estado_atual`. O Pygame deve correr no Main Thread, lendo essa variável para renderizar o ecrã a 60 FPS.
-> 2. **Suavização (Smoothing):** Implementa interpolação linear para as coordenadas Y dos jogadores e X dos obstáculos, garantindo fluidez visual entre os pacotes de rede (recebidos a 33 FPS).
-> 3. **Gestão de IDs:** Usa o 'id' único de cada vulcão enviado pelo servidor para manter a consistência da interpolação e evitar 'teleportes' visuais quando a lista de obstáculos é atualizada.
-> 4. **Estética:** Inclui rotação do sprite baseada na velocidade vertical (tilt) e funções para carregar backgrounds animados (GIF) e assets de vulcões."
-
 ---
 
 ## DESTAQUE ARQUITETURA: Refatoração da Física (`vel_y`) e Aumento de Dificuldade
@@ -97,3 +83,16 @@ Se o pássaro acumulasse demasiada velocidade, ele desceria uma quantidade enorm
 **A Solução Implementada (Limite de Velocidade):**
 Para garantir a integridade da deteção de colisões (*Hitboxes*), foi implementado um **cap máximo de velocidade na estrutura de dados** (ex: `if jogador['vel_y'] > 4.5: jogador['vel_y'] = 4.5`).
 Isto funciona como a "velocidade" do pássaro. Ao limitar a taxa máxima de queda, asseguramos que o percurso *frame a frame* é sempre contínuo e suficientemente pequeno para que o sistema de colisões detete de forma rigorosa qualquer impacto contra a abertura do vulcão ou contra o chão, garantindo uma jogabilidade justa mesmo a altas velocidades.
+
+### Anexo: Prompt de Apoio à Transição para Pygame
+
+Para converter a interface de terminal numa interface gráfica funcional, foi utilizado o seguinte prompt técnico:
+
+> **Prompt:**
+> "Cria uma classe `InterfaceGrafica` em Pygame para um jogo multiplayer (Flappy Bird style). 
+> 
+> **Requisitos Técnicos:**
+> 1. **Arquitetura de Threads:** O `BroadcastReceiver` (rede) deve apenas atualizar uma variável `estado_atual`. O Pygame deve correr no Main Thread, lendo essa variável para renderizar o ecrã a 60 FPS.
+> 2. **Suavização (Smoothing):** Implementa interpolação linear para as coordenadas Y dos jogadores e X dos obstáculos, garantindo fluidez visual entre os pacotes de rede (recebidos a 33 FPS).
+> 3. **Gestão de IDs:** Usa o 'id' único de cada vulcão enviado pelo servidor para manter a consistência da interpolação e evitar 'teleportes' visuais quando a lista de obstáculos é atualizada.
+> 4. **Estética:** Inclui rotação do sprite baseada na velocidade vertical (tilt) e funções para carregar backgrounds animados (GIF) e assets de vulcões."
