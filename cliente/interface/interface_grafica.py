@@ -313,7 +313,7 @@ class InterfaceGrafica:
                 
                 if not receiver.ativo:
                     self.win.blit(self.PAUSE_BG, (0, 0))
-                    draw_text_shadow(self.win, "LIGAÇÃO RECUSADA/PERDIDA", self.FONT, RED, WIDTH//2 - 200, HEIGHT//2 - 50)
+                    draw_text_shadow(self.win, "LIGAÇÃO RECUSADA/PERDIDA", self.FONT, RED, WIDTH//2 - 240, HEIGHT//2 - 50)
                     draw_text_shadow(self.win, "(O servidor caiu, ou o teu nome já existe)", self.SMALL_FONT, WHITE, WIDTH//2 - 220, HEIGHT//2 + 10)
                     pygame.display.update()
                     pygame.time.delay(4000)
