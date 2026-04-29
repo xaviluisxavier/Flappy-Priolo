@@ -1,6 +1,6 @@
 # Relatório Intermédio: Flappy Priolo
 **GRUPO:** G11
-**GITHUB:** https://github.com/xaviluisxavier/Flappy-Priolo/main
+**GITHUB:** https://github.com/xaviluisxavier/Flappy-Priolo/
 
 ## 1. O que conseguimos realizar
 Até ao momento, concluímos com sucesso a base arquitetural do jogo e a mecânica central de funcionamento:
