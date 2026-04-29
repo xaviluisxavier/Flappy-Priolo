@@ -1,65 +1,85 @@
 import socket
+import os
 import cliente
 from cliente.interface.broadcast_receiver import BroadcastReceiver
 
 class Interface:
     """
-    Classe responsável por gerir a interação direta do jogador com o jogo (lado do cliente).
-    Estabelece a ligação com o servidor, recolhe os comandos do teclado e inicia a thread 
-    responsável por desenhar o ecrã em tempo real.
+    Classe responsável por gerir a interação com o jogador, recolher inputs
+    e renderizar o ecrã do jogo.
     """
 
     def __init__(self):
-        """
-        Inicializa a interface do cliente.
-        Cria o socket de rede e estabelece imediatamente a ligação ao servidor 
-        utilizando o endereço (IP) e a porta definidos no ficheiro de configurações.
-        """
         self.connection = socket.socket()
         self.connection.connect((cliente.SERVER_ADDRESS, cliente.PORT))
 
     def send_str(self, connect, value: str) -> None:
-        """
-        Codifica uma string (texto) em bytes e envia-a através da rede.
-        
-        :param connect: O objeto socket que representa a ligação ao servidor.
-        :param value: A string a ser enviada (ex: o nome do jogador ou o comando de salto).
-        """
         connect.send(value.encode())
 
-    def execute(self):
+    def atualizar_ecra(self, estado):
         """
-        Inicia o ciclo principal de execução do cliente.
-        O fluxo de interação funciona da seguinte forma:
-        1. Pede o nome do jogador e envia-o como primeira mensagem para o servidor.
-        2. Instancia e arranca o BroadcastReceiver (thread que vai ouvir o estado do 
-           jogo e desenhar a grelha no terminal).
-        3. Entra num ciclo infinito à espera de inputs do utilizador:
-           - 'f' (seguido de ENTER) envia o comando para o pássaro saltar ("FLAP").
-           - '.' (seguido de ENTER) envia o comando de paragem ("END") e desliga o jogo.
+        Este método é chamado pelo BroadcastReceiver sempre que chega um novo estado.
+        É aqui que fica toda a "Interface Gráfica" (os prints).
         """
-        # 1. Pede o nome
-        nome = input("Bem-vindo ao Flappy Priolo! Qual é o teu nome? ")
-        self.send_str(self.connection, nome) # Envia o nome para o servidor
+        # Trata erros
+        if "acao" in estado and estado["acao"] == "ERRO":
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print(f"\nLIGAÇÃO RECUSADA: {estado['motivo']}")
+            print("Pressiona [ENTER] para sair.")
+            return
+
+        # Limpa e desenha
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("FLAPPY PRIOLO")
         
-        # 2. Inicia a thread que desenha o ecrã
-        receiver = BroadcastReceiver(self.connection)
+        for pid, info in estado['jogadores'].items(): 
+            print(f"\n[Ecrã de {info['nome']}] Pontos: {info['score']}")
+            print("=" * 51)
+            
+            for y in range(10, 100, 10): 
+                linha = ""
+                for x in range(0, 101, 2): 
+                    pixel = " "
+                    
+                    # Vulcões
+                    for vulcao in info['vulcoes']:
+                        na_coluna = abs(vulcao['x'] - x) <= 2
+                        desenha_vulcao = y < vulcao['abertura_y'] - 15 or y > vulcao['abertura_y'] + 15
+                        if na_coluna and desenha_vulcao:
+                            pixel = "X" 
+                    
+                    # Pássaro
+                    no_x = (info['x'] == x)
+                    no_y = abs(info['y'] - y) <= 4
+                    if no_x and no_y:
+                        pixel = "🐦" 
+                            
+                    linha += pixel 
+                print(linha)
+            print("=" * 51) 
+            
+        print("\nEscreve 'f' e [ENTER] para saltar!")
+
+    def execute(self):
+        nome = input("Bem-vindo ao Flappy Priolo! Qual é o teu nome? ")
+        self.send_str(self.connection, nome)
+        
+        # Inicia o receiver, passando 'self' para ele conhecer a interface
+        receiver = BroadcastReceiver(self.connection, self)
         receiver.start()
 
-        # 3. Ciclo infinito à espera que o jogador carregue em 'f'
+        # Ciclo de jogo
         while True:
             try:
-                comando = input() # Fica à espera do "f" e Enter
+                comando = input() 
                 
                 if comando.lower() == 'f':
                     self.send_str(self.connection, "FLAP")
-                    
                 elif comando.lower() == '.':
                     self.send_str(self.connection, "END")
                     break
                     
             except KeyboardInterrupt:
-                # Permite fechar o jogo com Ctrl+C
                 break
                 
         self.connection.close()
