@@ -2,6 +2,13 @@
 COMMAND_SIZE = 9
 INT_SIZE = 8
 
+# --- FÍSICA E REGRAS DO JOGO ---
+GRAVIDADE_BASE = 0.4  
+SALTO_BASE = 3.5      
+VELOCIDADE_BASE = 0.7 
+DISTANCIA_ENTRE_TUBOS = 60
+POSICAO_X_PRIOLOS = 20
+
 # Operações do Jogo
 FLAP_OP = "flap     " 
 END_OP  = "stop     "
