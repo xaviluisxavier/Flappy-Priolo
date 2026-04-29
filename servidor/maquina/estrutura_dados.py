@@ -1,17 +1,11 @@
 import threading
 import random
+import servidor
 
 class DadosJogo:
     def __init__(self):
         self.jogadores = {} 
         self.lock = threading.Lock() 
-        
-        self.gravidade_base = 0.4  
-        self.salto_base = 3.5      
-        self.velocidade_base = 0.7 
-        
-        self.distancia_entre_tubos = 60
-        self.posicao_x_priolos = 20 
         self.v_id_counter = 0
 
     def gerar_id_vulcao(self):
@@ -26,7 +20,7 @@ class DadosJogo:
             
             self.jogadores[player_id] = {
                 'nome': nome, 
-                'x': self.posicao_x_priolos, 
+                'x': servidor.POSICAO_X_PRIOLOS, 
                 'y': 20.0, 
                 'vel_y': 0.0, 
                 'score': 0,
@@ -43,7 +37,7 @@ class DadosJogo:
             if player_id in self.jogadores:
                 if acao == "FLAP":
                     jogador = self.jogadores[player_id]
-                    jogador['vel_y'] = -self.salto_base
+                    jogador['vel_y'] = -servidor.SALTO_BASE 
         return False
 
     def aplicar_gravidade(self, player_id):
@@ -51,7 +45,7 @@ class DadosJogo:
             if player_id not in self.jogadores: return False
             jogador = self.jogadores[player_id]
             
-            jogador['vel_y'] += self.gravidade_base
+            jogador['vel_y'] += servidor.GRAVIDADE_BASE 
             
             if jogador['vel_y'] > 4.5:
                 jogador['vel_y'] = 4.5
@@ -81,21 +75,21 @@ class DadosJogo:
         with self.lock:
             for pid, jogador in self.jogadores.items():
                 for v in jogador['vulcoes']:
-                    if v['x'] < self.posicao_x_priolos and not v.get('contado', False):
+                    if v['x'] < servidor.POSICAO_X_PRIOLOS and not v.get('contado', False):
                         jogador['score'] += 1
                         v['contado'] = True
 
     def atualizar_mundo(self):
         with self.lock:
             for pid, jogador in self.jogadores.items():
-                velocidade_atual = self.velocidade_base + ((jogador['score'] // 5) * 0.2)
+                velocidade_atual = servidor.VELOCIDADE_BASE + ((jogador['score'] // 5) * 0.2)
                 for v in jogador['vulcoes']: 
                     v['x'] -= velocidade_atual
                     
                 if jogador['vulcoes'] and jogador['vulcoes'][0]['x'] < -10: 
                     jogador['vulcoes'].pop(0)
                     
-                if jogador['vulcoes'][-1]['x'] < (100 - self.distancia_entre_tubos):
+                if jogador['vulcoes'][-1]['x'] < (100 - servidor.DISTANCIA_ENTRE_VULCOES):
                     jogador['vulcoes'].append({'id': self.gerar_id_vulcao(), 'x': 100.0, 'abertura_y': random.randint(15, 85), 'contado': False})
 
     def obter_estado(self):
@@ -111,10 +105,10 @@ class DadosJogo:
                 }
 
             parametros_atuais = {
-                'gravidade': round(self.gravidade_base, 2),
-                'salto': round(self.salto_base, 2),
-                'velocidade': round(self.velocidade_base, 2),
-                'distancia': self.distancia_entre_tubos,
+                'gravidade': round(servidor.GRAVIDADE_BASE, 2),
+                'salto': round(servidor.SALTO_BASE, 2),
+                'velocidade': round(servidor.VELOCIDADE_BASE, 2),
+                'distancia': servidor.DISTANCIA_ENTRE_VULCOES,
                 'v_ids': self.v_id_counter
             }
             return {'jogadores': estado_limpo, 'parametros': parametros_atuais}
