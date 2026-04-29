@@ -84,15 +84,29 @@ Se o pássaro acumulasse demasiada velocidade, ele desceria uma quantidade enorm
 Para garantir a integridade da deteção de colisões (*Hitboxes*), foi implementado um **cap máximo de velocidade na estrutura de dados** (ex: `if jogador['vel_y'] > 4.5: jogador['vel_y'] = 4.5`).
 Isto funciona como a "velocidade" do pássaro. Ao limitar a taxa máxima de queda, asseguramos que o percurso *frame a frame* é sempre contínuo e suficientemente pequeno para que o sistema de colisões detete de forma rigorosa qualquer impacto contra a abertura do vulcão ou contra o chão, garantindo uma jogabilidade justa mesmo a altas velocidades.
 
-### Anexo: Prompt de Apoio à Transição para Pygame
+### Anexo: Prompt para a Geração do Pygame
 
-Para converter a interface de terminal numa interface gráfica funcional, foi utilizado o seguinte prompt técnico:
+Para a conversão da interface de terminal numa interface gráfica, foi necessário desenhar um *prompt* técnico que garantisse a estabilidade da rede e a fluidez visual do jogo. O *prompt* utilizado foi o seguinte:
 
 > **Prompt:**
-> "Cria uma classe `InterfaceGrafica` em Pygame para um jogo multiplayer (Flappy Bird style). 
+> "Atua como um Engenheiro de Software especialista em Python, Pygame e Redes (Sockets). O meu projeto 'Flappy Priolo' tem um servidor que corre a um *tick rate* de ~33 FPS (0.03s de intervalo) e envia o estado do jogo em formato JSON via Broadcast para múltiplos clientes. 
 > 
-> **Requisitos Técnicos:**
-> 1. **Arquitetura de Threads:** O `BroadcastReceiver` (rede) deve apenas atualizar uma variável `estado_atual`. O Pygame deve correr no Main Thread, lendo essa variável para renderizar o ecrã a 60 FPS.
-> 2. **Suavização (Smoothing):** Implementa interpolação linear para as coordenadas Y dos jogadores e X dos obstáculos, garantindo fluidez visual entre os pacotes de rede (recebidos a 33 FPS).
-> 3. **Gestão de IDs:** Usa o 'id' único de cada vulcão enviado pelo servidor para manter a consistência da interpolação e evitar 'teleportes' visuais quando a lista de obstáculos é atualizada.
-> 4. **Estética:** Inclui rotação do sprite baseada na velocidade vertical (tilt) e funções para carregar backgrounds animados (GIF) e assets de vulcões."
+> Preciso que programes a classe `InterfaceGrafica` (cliente Pygame) cumprindo estritamente os seguintes requisitos arquiteturais:
+> 
+> **1. Concorrência e *Thread Safety*:**
+> O Pygame não suporta renderização a partir de threads em background. Portanto, o `BroadcastReceiver` (que herda de `threading.Thread`) deve apenas ler o socket e guardar o JSON descodificado numa variável de instância `estado_atual`. O *Game Loop* principal do Pygame correrá a 60 FPS e fará a leitura dessa variável para desenhar o ecrã.
+> 
+> **2. Interpolação Linear (Movement Smoothing):**
+> Como o servidor envia dados a ~33 FPS e o ecrã atualiza a 60 FPS, desenhar as coordenadas brutas causaria 'soluços' visuais. Implementa dicionários de suavização (`suave_y` e `suave_vx`) que apliquem interpolação para deslizar os *sprites* progressivamente até à posição alvo. 
+> 
+> **3. Gestão de IDs e Prevenção de Teleportes:**
+> O servidor apaga os vulcões da lista quando estes saem do ecrã (`pop(0)`). Para que o sistema de interpolação não confunda o vulcão novo com o antigo (o que causaria um teleporte visual no ecrã), utiliza a chave `id` que o servidor envia dentro do dicionário de cada vulcão para os rastrear de forma única.
+> 
+> **4. Lógica de UI e Menus:**
+> - Cria um ecrã inicial para pedir o nome do jogador.
+> - Um *Leaderboard* no canto superior direito a mostrar os 5 melhores jogadores.
+> - Um menu de Pausa (tecla ESC) que congele os inputs do jogador (mas não o socket) com botões para 'Retomar' ou 'Sair' (voltando ao menu inicial de forma limpa, fechando a ligação atual).
+> - Um *Debug Overlay* no canto superior esquerdo que leia o dicionário `parametros` do JSON para mostrar a Gravidade, Velocidade Atual e IDs gerados em tempo real.
+> 
+> **5. Feedback Visual:**
+> Calcula a velocidade visual do pássaro baseada na diferença da sua posição interpolada e aplica uma rotação (*tilt*) ao *sprite*: apontar para cima quando sobe, e para baixo quando cai. Utiliza a biblioteca PIL para extrair frames do fundo animado `background_acores.gif`."
